@@ -43,16 +43,17 @@ parseTree = module_body.parseString(lines)
 
 stacks={}
 stack=[]
+maxDepth=1
 for s in parseTree.asList():
     mem = 0
     if "PushRegion" in s:
         stack.append(s[2].strip())
     if "PopRegion" in s:
         stack.pop()
-    if "PushRegion" not in s and "PopRegion" not in s:
+    if "PushRegion" not in s and "PopRegion" not in s and "Cuda" in s:
         mem = int(s[2])
-        stackStr = ';'.join(stack)
-        if len(s) == 6:
+        stackStr = ';'.join([i for i in stack[0:maxDepth]])
+        if len(s) == 6 and len(stack) < maxDepth:
           stackStr += ";" + s[5]
         if stackStr not in stacks:
           stacks[stackStr]=[0]
@@ -67,9 +68,9 @@ for s in parseTree.asList():
         stack.append(s[2].strip())
     if "PopRegion" in s:
         stack.pop()
-    if "PushRegion" not in s and "PopRegion" not in s:
-        stackStr = ';'.join(stack)
-        if len(s) == 6:
+    if "PushRegion" not in s and "PopRegion" not in s and "Cuda" in s:
+        stackStr = ';'.join([i for i in stack[0:maxDepth]])
+        if len(s) == 6 and len(stack) < maxDepth:
           stackStr += ";" + s[5]
         time.append(float(s[0]))
         m = float(s[2])
@@ -88,11 +89,14 @@ for s in parseTree.asList():
 
 sortedStacks = sorted(stacks.items(), key=lambda e: max(e[1]),reverse=True)
 
+
+
 bigStacks={'time':time}
 bigStacks={'other':[]}
 i=0
-maxEntries=10
+maxEntries=2
 for (k,v) in sortedStacks:
+    print(k)
     if i < maxEntries:
       bigStacks[k]=v
     else:
@@ -103,7 +107,8 @@ for (k,v) in sortedStacks:
         bigStacks['other'] = [sum(x) for x in zip(o,v)]
     i+=1
 
-print(max(bigStacks['other']))
+for (k,v) in bigStacks.items():
+  print(k,max(v),v)
 
 df = pd.DataFrame(bigStacks)
 f = plt.figure()
@@ -111,5 +116,4 @@ ax = df.plot.area()
 ax.legend(bbox_to_anchor=(1,1))
 ax.set_ylabel('gpu mem(MB)')
 ax.set_title('peak gpu memory usage')
-f.subplots_adjust(right=0.8)
 plt.savefig(sys.argv[3],bbox_inches='tight',dpi=200)
