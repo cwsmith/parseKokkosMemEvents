@@ -8,4 +8,4 @@ python3 with `pyparsing`, `pandas`, and `matplotlib`
 
 ## run
 
-`python ./memEventParse.py /path/to/h##n##-####.mem_events /path/to/plot.png` 
+`python ./memEventParse.py /path/to/h##n##-####.mem_events #MemoryRegionsToReport /path/to/plot.png` 
