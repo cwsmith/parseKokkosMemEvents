@@ -4,6 +4,8 @@ The following code parses output from [kokkos-tools MemoryEvents](https://github
 
 Portions of the code are specific to the [pumipic applications](https://github.com/SCOREC/pumi-pic), its dependencies, and the profiling regions it defines.
 
+![example of memory usage plot](h36n13-47550.peakTrace.png)
+
 ## dependencies
 
 python3 with `pyparsing`, `pandas`, and `matplotlib`
