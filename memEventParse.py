@@ -52,11 +52,23 @@ for s in parseTree.asList():
         stack.pop()
     if "PushRegion" not in s and "PopRegion" not in s and "Cuda" in s:
         mem = int(s[2])
-        stackStr = ';'.join([i for i in stack[0:maxDepth]])
-        if len(s) == 6 and len(stack) < maxDepth:
-          stackStr += ";" + s[5]
+        stackStr=''
+        if len(s) == 6: # capture the name of the view/allocation
+          stack.append(s[5])
+        # 'Write allocation' frames need to be counted
+        # within their parent frame since their deallocation
+        # is in the parent frame
+        stackStr = ';'.join([i if i != "Write allocation" else '' for i in stack[0:maxDepth]])
+        if len(s) == 6:
+          stack.pop()
+        # add the new stack to the dictionary
         if stackStr not in stacks:
           stacks[stackStr]=[0]
+
+print('---begin: stacks---')
+for (k,v) in stacks.items():
+  print(k)
+print('---end: stacks---')
 
 M=1024*1024
 stack=[]
@@ -69,9 +81,16 @@ for s in parseTree.asList():
     if "PopRegion" in s:
         stack.pop()
     if "PushRegion" not in s and "PopRegion" not in s and "Cuda" in s:
-        stackStr = ';'.join([i for i in stack[0:maxDepth]])
-        if len(s) == 6 and len(stack) < maxDepth:
-          stackStr += ";" + s[5]
+        stackStr=''
+        if len(s) == 6: # capture the name of the view/allocation
+          stack.append(s[5])
+        # 'Write allocation' frames need to be counted
+        # within their parent frame since their deallocation
+        # is in the parent frame
+        stackStr = ';'.join([i if i != "Write allocation" else '' for i in stack[0:maxDepth]])
+        if len(s) == 6:
+          stack.pop()
+
         time.append(float(s[0]))
         m = float(s[2])
         tot += m
@@ -94,7 +113,7 @@ sortedStacks = sorted(stacks.items(), key=lambda e: max(e[1]),reverse=True)
 bigStacks={'time':time}
 bigStacks={'other':[]}
 i=0
-maxEntries=2
+maxEntries=5
 for (k,v) in sortedStacks:
     print(k)
     if i < maxEntries:
