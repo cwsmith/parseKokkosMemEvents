@@ -39,7 +39,6 @@ stmt = pp.Forward()
 stmt << (comment | start | body | end)
 module_body = pp.OneOrMore(stmt)
 parseTree = module_body.parseString(lines)
-#parseTree.pprint()
 
 stacks={}
 stack=[]
@@ -72,7 +71,8 @@ print('---end: stacks---')
 
 M=1024*1024*1024
 stack=[]
-time=[]
+#length needs to match the length of lists in 'stacks'
+time=[0]
 mem=[]
 tot=0
 for s in parseTree.asList():
@@ -99,7 +99,7 @@ for s in parseTree.asList():
           last=stacks[k][-1]
           if stackStr == k:
             lpm = last + m/M
-            if lpm < 0:
+            if lpm < 0: # area plots don't support negative values
               stacks[k].append(0)
             else:
               stacks[k].append(lpm)
@@ -108,14 +108,11 @@ for s in parseTree.asList():
 
 sortedStacks = sorted(stacks.items(), key=lambda e: max(e[1]),reverse=True)
 
-
-
 bigStacks={'time':time}
-bigStacks={'other':[]}
+bigStacks['other']=[]
 i=0
 maxEntries=5
 for (k,v) in sortedStacks:
-    print(k)
     if i < maxEntries:
       bigStacks[k]=v
     else:
@@ -126,13 +123,16 @@ for (k,v) in sortedStacks:
         bigStacks['other'] = [sum(x) for x in zip(o,v)]
     i+=1
 
+print('---begin: max mem stacks---')
 for (k,v) in bigStacks.items():
-  print(k,max(v),v)
+  print(k,'max(values)',max(v))
+print('---end: max mem stacks---')
 
 df = pd.DataFrame(bigStacks)
 f = plt.figure()
-ax = df.plot.area()
+ax = df.plot.area(x='time')
 ax.legend(bbox_to_anchor=(1,1))
 ax.set_ylabel('gpu mem (GB)')
-ax.set_title('peak gpu memory usage')
+ax.set_xlabel('time (s)')
+ax.set_title('gpu memory usage')
 plt.savefig(sys.argv[3],bbox_inches='tight',dpi=200)
