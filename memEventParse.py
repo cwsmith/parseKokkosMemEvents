@@ -3,8 +3,11 @@ import sys
 import pandas as pd
 import matplotlib.pyplot as plt
 
-myfile=open(sys.argv[1], 'r')
-dbg=int(sys.argv[2])
+if len(sys.argv) is not 4:
+    print(len(sys.argv))
+    print("Usage:", sys.argv[0],
+      "<mem-events file> <max regions> <output plot>")
+    sys.exit(1)
 
 filepath = sys.argv[1]
 with open(filepath) as f:
@@ -27,7 +30,7 @@ body.setName('body')
 end=pp.Group(ls + real + pp.Keyword('}') + pop + pp.LineEnd())
 end.setName('end')
 
-if dbg == 1:
+if False: #change to True to debug parsing
    start.setDebug()
    body.setDebug()
    end.setDebug()
@@ -60,11 +63,6 @@ for s in parseTree.asList():
         # add the new stack to the dictionary
         if stackStr not in stacks:
           stacks[stackStr]=[0]
-
-print('---begin: stacks---')
-for (k,v) in stacks.items():
-  print(k)
-print('---end: stacks---')
 
 M=1024*1024*1024
 stack=[]
@@ -108,21 +106,22 @@ sortedStacks = sorted(stacks.items(), key=lambda e: max(e[1]),reverse=True)
 bigStacks={'time':time}
 bigStacks['other']=[]
 i=0
-maxEntries=5
+maxEntries=int(sys.argv[2])
 for (k,v) in sortedStacks:
     if i < maxEntries:
       bigStacks[k]=v
     else:
       o = bigStacks['other']
-      if not o: 
+      if not o:
         bigStacks['other'] = v;
       else:
         bigStacks['other'] = [sum(x) for x in zip(o,v)]
     i+=1
 
-print('---begin: max mem stacks---')
+print('---begin: max mem stacks (region, maxGB) ---')
 for (k,v) in bigStacks.items():
-  print(k,'max(values)',max(v))
+  if k != 'time':
+    print(k,max(v))
 print('---end: max mem stacks---')
 
 df = pd.DataFrame(bigStacks)
