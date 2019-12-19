@@ -4,7 +4,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 if len(sys.argv) is not 4:
-    print(len(sys.argv))
     print("Usage:", sys.argv[0],
       "<mem-events file> <max regions> <output plot>")
     sys.exit(1)
@@ -40,6 +39,19 @@ stmt << (comment | start | body | end)
 module_body = pp.OneOrMore(stmt)
 parseTree = module_body.parseString(lines)
 
+def getStackString(stack,s,maxDepth):
+  stackStr=''
+  if len(s) == 6: # capture the name of the view/allocation
+    stack.append(s[5])
+  # Omega_h 'Write allocation' frames need to be counted
+  # within their parent frame since their deallocation
+  # is in the parent frame
+  stackStr = ';'.join([i if i != "Write allocation" else '' for i in stack[0:maxDepth]])
+  if len(s) == 6:
+    stack.pop()
+  return stackStr
+
+
 stacks={}
 stack=[]
 maxDepth=1
@@ -51,15 +63,7 @@ for s in parseTree.asList():
         stack.pop()
     if "PushRegion" not in s and "PopRegion" not in s and "Cuda" in s:
         mem = int(s[2])
-        stackStr=''
-        if len(s) == 6: # capture the name of the view/allocation
-          stack.append(s[5])
-        # 'Write allocation' frames need to be counted
-        # within their parent frame since their deallocation
-        # is in the parent frame
-        stackStr = ';'.join([i if i != "Write allocation" else '' for i in stack[0:maxDepth]])
-        if len(s) == 6:
-          stack.pop()
+        stackStr = getStackString(stack,s,maxDepth)
         # add the new stack to the dictionary
         if stackStr not in stacks:
           stacks[stackStr]=[0]
@@ -76,16 +80,7 @@ for s in parseTree.asList():
     if "PopRegion" in s:
         stack.pop()
     if "PushRegion" not in s and "PopRegion" not in s and "Cuda" in s:
-        stackStr=''
-        if len(s) == 6: # capture the name of the view/allocation
-          stack.append(s[5])
-        # 'Write allocation' frames need to be counted
-        # within their parent frame since their deallocation
-        # is in the parent frame
-        stackStr = ';'.join([i if i != "Write allocation" else '' for i in stack[0:maxDepth]])
-        if len(s) == 6:
-          stack.pop()
-
+        stackStr = getStackString(stack,s,maxDepth)
         time.append(float(s[0]))
         m = float(s[2])
         tot += m
