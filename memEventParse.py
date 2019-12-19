@@ -49,8 +49,9 @@ def getStackString(stack,s,maxDepth):
   stackStr = ';'.join([i if i != "Write allocation" else '' for i in stack[0:maxDepth]])
   if len(s) == 6:
     stack.pop()
+  if len(stackStr) == 0:
+    stackStr = "root"
   return stackStr
-
 
 stacks={}
 stack=[]
