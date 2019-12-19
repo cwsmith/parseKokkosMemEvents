@@ -131,7 +131,9 @@ print('---end: max mem stacks---')
 df = pd.DataFrame(bigStacks)
 f = plt.figure()
 ax = df.plot.area(x='time')
-ax.legend(bbox_to_anchor=(1,1))
+#move the legend to the right of the plot
+legendTitle="top "+str(maxEntries)+" largest memory usage regions"
+ax.legend(title=legendTitle,bbox_to_anchor=(1,1))
 ax.set_ylabel('gpu mem (GB)')
 ax.set_xlabel('time (s)')
 ax.set_title('gpu memory usage')
