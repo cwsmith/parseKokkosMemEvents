@@ -70,7 +70,7 @@ for (k,v) in stacks.items():
   print(k)
 print('---end: stacks---')
 
-M=1024*1024
+M=1024*1024*1024
 stack=[]
 time=[]
 mem=[]
@@ -133,6 +133,6 @@ df = pd.DataFrame(bigStacks)
 f = plt.figure()
 ax = df.plot.area()
 ax.legend(bbox_to_anchor=(1,1))
-ax.set_ylabel('gpu mem(MB)')
+ax.set_ylabel('gpu mem (GB)')
 ax.set_title('peak gpu memory usage')
 plt.savefig(sys.argv[3],bbox_inches='tight',dpi=200)
